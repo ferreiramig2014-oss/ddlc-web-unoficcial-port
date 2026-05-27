@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Doki Doki Literature Club - Unofficial Fan Port (Baiano VM)</title>
+    
+    <link rel="icon" type="image/jpeg" href="favicon.png">
+
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Doki Doki Literature Club - Unofficial Fan Port (Baiano VM)</title>
+    <style>
+      /* 🟦 ESTILIZAÇÃO DO SISTEMA OPERACIONAL DO BAIANO */
+      body {
+        font-family: 'Segoe UI', Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #e2e8f0; /* Fundo cinza claro idêntico à imagem */
+        overflow-x: hidden;
+      }
+
+      /* CABEÇALHO AZUL FIXO */
+      #top-header {
+        width: 100%;
+        height: 90px;
+        background-color: #29b6f6; /* Azul vivo da imagem */
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        position: relative;
+        padding: 0 40px;
+        box-sizing: border-box;
+      }
+      #header-title {
+        color: rgba(255,255,255,0.9);
+        font-size: 13px;
+        font-weight: bold;
+        position: absolute;
+        top: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      #logo-container {
+        height: 55px;
+        margin-top: 15px;
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      #logo-container img {
+        height: 100%;
+        object-fit: contain;
+      }
+
+      /* Ícones de Status do Lado Direito */
+      .status-bar {
+        display: flex;
+        gap: 25px;
+        color: white;
+        font-size: 11px;
+        font-weight: bold;
+      }
+      .status-item {
+        text-align: center;
+        cursor: pointer;
+        opacity: 0.9;
+        transition: 0.2s;
+      }
+      .status-item:hover {
+        opacity: 1;
+        transform: scale(1.05);
+      }
+      .status-icon {
+        font-size: 24px;
+        margin-bottom: 2px;
+      }
+
+      /* CONTEÚDO PRINCIPAL (MOLDURAS DAS JANELAS) */
+      #main-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 30px 0;
+        gap: 20px;
+        box-sizing: border-box;
+      }
+
+      /* Janela Flutuante do Jogo (Estilo Windows/VM) */
+      .window-box {
+        background: white;
+        border: 2px solid #b0bec5;
+        border-radius: 6px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        width: 800px;
+        overflow: hidden;
+      }
+      .window-titlebar {
+        background: #cfd8dc;
+        color: #37474f;
+        padding: 6px 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 12px;
+        font-weight: bold;
+        border-bottom: 1px solid #b0bec5;
+        user-select: none;
+      }
+      .window-controls span {
+        cursor: pointer;
+        color: #0288d1;
+        font-weight: bold;
+      }
+
+      /* Ajuste cirúrgico do Canvas do Ren'Py para caber na mini tela */
+      canvas.emscripten {
+        border: 0px none;
+        background-color: black;
+        width: 100%;
+        height: 450px;
+        display: block;
+      }
+
+      /* 📂 GERENCIADOR DE ARQUIVOS (ROSA DA IMAGEM) */
+      .file-manager {
+        width: 450px;
+        background: #fce4ec;
+        border: 2px solid #f48fb1;
+        border-radius: 6px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        overflow: hidden;
+      }
+      .file-manager-title {
+        background: #f48fb1;
+        color: #4a001f;
+        padding: 8px 12px;
+        font-size: 13px;
+        font-weight: bold;
+      }
+      .file-table {
+        width: 100%;
+        padding: 10px;
+        box-sizing: border-box;
+        font-size: 13px;
+      }
+      .file-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 8px;
+        border-bottom: 1px solid #f8bbd0;
+      }
+      .btn-action {
+        background: white;
+        border: 1px solid #ff4757;
+        color: #ff4757;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.1s;
+      }
+      .btn-action:hover {
+        background: #ff4757;
+        color: white;
+      }
+
+      /* BOTÃO DE RESET DA STEAM */
+      .btn-reset-steam {
+        width: calc(100% - 20px);
+        background: #d32f2f;
+        color: white;
+        border: none;
+        padding: 10px;
+        margin: 10px;
+        border-radius: 4px;
+        font-weight: bold;
+        font-size: 13px;
+        cursor: pointer;
+        box-shadow: 0 3px 0 #b71c1c;
+        text-align: center;
+        box-sizing: border-box;
+      }
+      .btn-reset-steam:hover {
+        background: #b71c1c;
+      }
+
+      /* Elementos nativos do Ren'Py Loader */
+      .emscripten { padding-right: 0; margin-left: auto; margin-right: auto; display: block; }
+      div.emscripten { text-align: center; }
+      #statusbar_container { position: fixed; bottom: 10px; left: 10px; width: 300px; z-index: 9999; }
+      #statusbar { padding: 10px; background-color: rgb(40, 40, 40); border-radius: 5px; color: white; }
+      #status { font-weight: bold; color: rgb(200, 200, 200); font-size: 12px; }
+      #progress { width: 100%; }
+      .spinner {
+        height: 20px; width: 20px; margin-bottom: 5px;
+        animation: rotation 0.8s linear infinite;
+        border-left: 3px solid #eee; border-right: 3px solid #eee;
+        border-bottom: 3px solid #eee; border-top: 3px solid #29b6f6;
+        border-radius: 100%;
+      }
+      @keyframes rotation { from {transform: rotate(0deg);} to {transform: rotate(360deg);} }
+      #ContextContainer { position: fixed; left: 10px; bottom: 80px; color: white; z-index: 999; }
+      #ContextButton { text-decoration: none; color: #78909c; font-size: xx-large; cursor: pointer; user-select: none; }
+      #ContextMenu { background-color: rgb(40,40,40); padding: 5px; font-size: 12px; border-radius: 4px; }
+      #ContextMenu a { text-decoration: none; color: lightgrey; display: block; padding: 3px 5px; }
+    </style>
+  </head>
+  <body>
+
+   <div id="top-header" style="width: 100%; height: 180px; background-color: #29b6f6; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 10px rgba(0,0,0,0.1); position: relative; padding: 0 40px; box-sizing: border-box;">
+    
+    <div id="header-title" style="color: rgba(255,255,255,0.9); font-size: 14px; font-weight: bold; position: absolute; top: 12px; left: 50%; transform: translateX(-50%); text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">Doki Doki Literature Club - Unofficial Fan Port (Baiano VM)</div>
+    
+    <div id="logo-container" style="height: 140px; margin-top: 25px; position: absolute; left: 50%; transform: translateX(-50%); display: flex; align-items: center; justify-content: center;">
+        <img src="baiano_logo.png" style="height: 100%; max-width: 400px; object-fit: contain;">
+    </div>
+
+    <div></div> <div class="status-bar" style="display: flex; gap: 25px; color: white; font-size: 11px; font-weight: bold; margin-top: 30px;">
+        <div class="status-item" style="text-align: center;"><div style="font-size: 24px; margin-bottom: 4px;">✔️</div>Web VM Status</div>
+        <div class="status-item" style="text-align: center; cursor: pointer;" onclick="document.getElementById('file-section').scrollIntoView({behavior: 'smooth'})"><div style="font-size: 24px; margin-bottom: 4px;">📁</div>Characters</div>
+        <div class="status-item" style="text-align: center; cursor: pointer;" onclick="resetGeralEstiloSteam()"><div style="font-size: 24px; margin-bottom: 4px;">⚙️</div>Reset Game</div>
+    </div>
+</div>
+
+    <div id="main-content">
+      
+      <div class="window-box">
+        <div class="window-titlebar">
+          <span>📁 Doki Doki Literature Club - Running in Sandboxed VM - Press Initialize</span>
+          <div class="window-controls">
+            <span onclick="expandirTela()">⬜ Ampliar</span>
+          </div>
+        </div>
+        
+        <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
+      </div>
+
+      <div class="file-manager" id="file-section">
+        <div class="file-manager-title">
+          <span>📁 CHARACTER FILE MANAGER</span>
+        </div>
+        <div class="file-table" id="tabela-arquivos">
+          </div>
+        <button class="btn-reset-steam" onclick="resetGeralEstiloSteam()">
+          ⚙️ RESET GAME (Recover / Reinstall Steam Style)
+        </button>
+      </div>
+
+    </div>
+
+    <div id="statusbar_container">
+      <div id="statusbar" hidden>
+        <div class="spinner" id='spinner'></div>
+        <div class="emscripten" id="status">Downloading...</div>
+        <progress value="0" max="100" id="progress" hidden=1></progress>
+      </div>
+    </div>
+
+    <div id="ContextContainer">
+      <a id="ContextButton">&#8801;</a>
+      <div id="ContextMenu" style="display: none;">
+        <input id="ID_SavegamesImport" type="file" onchange="onSavegamesImport(this)" accept="application/zip" style="display:none"></input>
+        <a href="javascript:document.getElementById('ID_SavegamesImport').click();">Import saves</a>
+        <a href="javascript:onSavegamesExport();">Export saves</a>
+        <a href="javascript:FSDownload('/log.txt', 'text/plain');">Ren'Py log</a>
+      </div>
+    </div>
+
+    <script>
+      if (typeof WebAssembly !== 'object') {
+          var error_message = "Unsupported browser - please upgrade!\n(WebAssembly support needed)";
+          document.body = document.createElement('body');
+          document.body.innerHTML = error_message.replace('\n', '<br />');
+          location.href = 'javascript:alert("' + error_message.replace('\n', '\\n') + '")';
+          throw error_message;
+      }
+      if (location.href.startsWith('file://')) {
+          alert("Error: your browser requires the game to be run from a local HTTP server (i.e. double-clicking on index.html won't work).");
+      }
+      document.getElementById('canvas').addEventListener('mouseenter', function(e) { window.focus() });
+      document.getElementById('canvas').addEventListener('click', function(e) { window.focus() });
+    </script>
+
+    <script type='text/javascript'>
+      /* Controle Interno de Hacking do Baiano */
+      let arquivosSessao = { "monika.chr": true, "sayori.chr": true, "yuri.chr": true, "natsuki.chr": true };
+
+      function renderizarTabela() {
+          const tabela = document.getElementById("tabela-arquivos");
+          tabela.innerHTML = `
+              <div style="display: flex; justify-content: space-between; font-weight: bold; padding: 4px 8px; color: #880e4f; border-bottom: 2px solid #f48fb1; font-size: 11px;">
+                  <span>File Name</span>
+                  <span>Action</span>
+              </div>
+          `;
+          for (let arquivo in arquivosSessao) {
+              if (arquivosSessao[arquivo]) {
+                  tabela.innerHTML += `
+                      <div class="file-row">
+                          <span>📄 ${arquivo}</span>
+                          <button class="btn-action" onclick="deletarArquivo('${arquivo}')">❌ Delete</button>
+                      </div>`;
+              } else {
+                  tabela.innerHTML += `
+                      <div class="file-row" style="opacity: 0.5; background: #f8bbd0;">
+                          <span style="text-decoration: line-through; color: #ad1457;">❌ ${arquivo}</span>
+                          <span style="font-size: 11px; color: #c2185b; font-weight: bold;">Deleted</span>
+                      </div>`;
+              }
+          }
+      }
+
+      function deletarArquivo(nomeArquivo) {
+          if (confirm(`Do you want to delete ${nomeArquivo} from the virtual environment?`)) {
+              arquivosSessao[nomeArquivo] = false;
+              renderizarTabela();
+              if (window.renpy) {
+                  window.renpy.runPython(`import os; os.remove("characters/${nomeArquivo}")`);
+              }
+          }
+      }
+
+      function resetGeralEstiloSteam() {
+          if (confirm("Steam Emulation: Wipe all database data and restore original character files?")) {
+              for (let chr in arquivosSessao) { arquivosSessao[chr] = true; }
+              renderizarTabela();
+              if (window.renpy) {
+                  window.renpy.runPython(`
+import renpy, os
+renpy.persistent._clear()
+for chr in ['monika.chr', 'sayori.chr', 'yuri.chr', 'natsuki.chr']:
+    with open(os.path.join('characters', chr), 'w') as f: f.write('Active')
+renpy.utter_restart()
+                  `);
+              }
+          }
+      }
+
+      function expandirTela() {
+          const canvasJogo = document.getElementById("canvas");
+          if (canvasJogo.requestFullscreen) canvasJogo.requestFullscreen();
+          else if (canvasJogo.webkitRequestFullscreen) canvasJogo.webkitRequestFullscreen();
+      }
+
+      renderizarTabela();
+
+      /* Script do Botão de Menu Nativo */
+      document.getElementById('ContextButton').addEventListener('click', function (e) {
+        var menu = document.getElementById('ContextMenu');
+        menu.style.display = (menu.style.display == 'none') ? 'block' : 'none';
+        e.preventDefault();
+      });
+
+      function onSavegamesImport(input) {
+        reader = new FileReader();
+        reader.onload = function(e) {
+          FS.writeFile('savegames.zip', new Uint8Array(e.target.result));
+          Module._emSavegamesImport();
+          FS.syncfs(false, function(err) {
+            if (err) {
+              console.log(err);
+            } else {
+              Module.print("Saves imported - restart game to apply.\n");
+            }
+          });
+        }
+        reader.readAsArrayBuffer(input.files[0]);
+        input.type = ''; input.type = 'file';
+      }
+
+      function onSavegamesExport() {
+        ret = Module._emSavegamesExport();
+        if (ret) { FSDownload('savegames.zip', 'application/zip'); }
+      }
+
+      function gameExtractAndRun() {
+        start = Date.now();
+        var ret = Module.ccall('PyRun_SimpleString', 'number', ['string'], [
+          "import zipfile\n" +
+          "zip_ref = zipfile.ZipFile('game.zip', 'r')\n" +
+          "zip_ref.extractall('.')\n" +
+          "zip_ref.close()\n"
+        ])
+        if (ret != 0) { Module.setStatus("Error extracting .zip."); return; }
+        FS.unlink('/game.zip');
+        
+        div = document.createElement('div');
+        div.id = 'presplash';
+        div.style = 'position: absolute; width: 100%; height: 100%; background: black;';
+        c = document.getElementById('canvas');
+        c.parentElement.prepend(div);
+
+        window.setTimeout(function() {
+          Module.ccall('pyapp_runmain', '', [], [], {async: true})
+        }, 200);
+      }
+
+      function presplashEnd() {
+        if(document.getElementById('presplash')) document.getElementById('presplash').remove();
+      }
+
+      function FSDownload(filename, mimetype) {
+        var a = document.createElement('a');
+        a.download = filename.replace(/.*\//, '');
+        try {
+          a.href = window.URL.createObjectURL(new Blob([FS.readFile(filename)], { type: mimetype || '' }));
+        } catch(e) {
+          return;
+        }
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function() { window.URL.revokeObjectURL(a.href); document.body.removeChild(a); }, 1000);
+      }
+    </script>
+
+    <script var statusElement = document.getElementById('status'); var progressElement = document.getElementById('progress'); var spinnerElement = document.getElementById('spinner'); var Module = { preRun: [], postRun: [], print: (function() { var element = document.getElementById('status'); return function(text) { console.log(text); }; })(), printErr: function(text) { console.error(text); }, canvas: (function() { var canvas = document.getElementById('canvas'); canvas.addEventListener("webglcontextlost", function(e) { alert('WebGL context lost. You will need to reload the page.'); e.preventDefault(); }, false); return canvas; })(), setStatus: function(text) { if (!Module.setStatus.last) Module.setStatus.last = { time: Date.now(), text: '' }; if (text === Module.setStatus.last.text) return; var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/); var now = Date.now(); if (m && now - Module.setStatus.last.time < 30) return; Module.setStatus.last.time = now; Module.setStatus.last.text = text; if (m) { text = m[1]; progressElement.value = parseInt(m[2])*100; progressElement.max = parseInt(m[4])*100; progressElement.hidden = false; document.getElementById('statusbar').hidden = false; } else { progressElement.value = null; progressElement.max = null; progressElement.hidden = true; if (!text) { document.getElementById('statusbar').hidden = true; } } if (text != '') { statusElement.innerHTML = text + '<br />'; document.getElementById('statusbar').hidden = false; } }, totalDependencies: 0, monitorRunDependencies: function(left) { this.totalDependencies = Math.max(this.totalDependencies, left); Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All downloads complete.'); } }; Module.setStatus('Downloading...'); ></script>
+    <script type='text/javascript' src="pythonhome-data.js"></script>
+    <script type='text/javascript' src="pyapp-data.js"></script>
+    <script type='text/javascript'>
+      function create_persistent() {
+        try {
+          FS.mkdir('/home/web_user/.renpy');
+          FS.mount(IDBFS, {}, '/home/web_user/.renpy');
+        } catch(e) { console.log(e); }
+        FS.syncfs(true, function(err) {});
+      }
+      if (Module['calledRun']) { create_persistent(); } else { if (!Module['preRun']) Module['preRun'] = []; Module["preRun"].push(create_persistent); }
+    </script>
+    <script async type="text/javascript" src="index.js"></script>
+  </body>
+</html>
